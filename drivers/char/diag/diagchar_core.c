@@ -400,7 +400,7 @@ int diag_mask_param(void)
 {
 	return diag_mask_clear_param;
 }
-void diag_clear_masks(struct diag_md_session_t *info)
+void diag_clear_masks(int pid)
 {
 	int ret;
 	char cmd_disable_log_mask[] = { 0x73, 0, 0, 0, 0, 0, 0, 0};
@@ -409,14 +409,14 @@ void diag_clear_masks(struct diag_md_session_t *info)
 
 	DIAG_LOG(DIAG_DEBUG_PERIPHERALS,
 	"diag: %s: masks clear request upon %s\n", __func__,
-	((info) ? "ODL exit" : "USB Disconnection"));
+	((pid) ? "ODL exit" : "USB Disconnection"));
 
 	ret = diag_process_apps_masks(cmd_disable_log_mask,
-			sizeof(cmd_disable_log_mask), info);
+			sizeof(cmd_disable_log_mask), pid);
 	ret = diag_process_apps_masks(cmd_disable_msg_mask,
-			sizeof(cmd_disable_msg_mask), info);
+			sizeof(cmd_disable_msg_mask), pid);
 	ret = diag_process_apps_masks(cmd_disable_event_mask,
-			sizeof(cmd_disable_event_mask), info);
+			sizeof(cmd_disable_event_mask), pid);
 	DIAG_LOG(DIAG_DEBUG_PERIPHERALS,
 	"diag:%s: masks cleared successfully\n", __func__);
 }
@@ -433,7 +433,7 @@ static void diag_close_logging_process(const int pid)
 		return;
 
 	if (diag_mask_clear_param)
-		diag_clear_masks(session_info);
+		diag_clear_masks(pid);
 
 
 	session_peripheral_mask = session_info->peripheral_mask;
@@ -1622,7 +1622,7 @@ static void diag_switch_logging_clear_mask(
 		return;
 	}
 	if ((new_mode == DIAG_USB_MODE) && diag_mask_clear_param)
-		diag_clear_masks(session_info);
+		diag_clear_masks(pid);
 
 }
 
@@ -2688,7 +2688,8 @@ static int diag_user_process_raw_data(const char __user *buf, int len)
 		wait_event_interruptible(driver->wait_q,
 					 (driver->in_busy_pktdata == 0));
 		info = diag_md_session_get_pid(current->tgid);
-		ret = diag_process_apps_pkt(user_space_data, len, info);
+		ret = diag_process_apps_pkt(user_space_data, len,
+			current->tgid);
 		if (ret == 1)
 			diag_send_error_rsp((void *)(user_space_data), len);
 	}
@@ -2767,11 +2768,11 @@ static int diag_user_process_userspace_data(const char __user *buf, int len)
 		if (!hdlc_disabled)
 			diag_process_hdlc_pkt((void *)
 				(driver->user_space_data_buf),
-				len, session_info);
+				len, current->tgid);
 		else
 			diag_process_non_hdlc_pkt((char *)
 						(driver->user_space_data_buf),
-						len, session_info);
+						len, current->tgid);
 		return 0;
 	}
 
