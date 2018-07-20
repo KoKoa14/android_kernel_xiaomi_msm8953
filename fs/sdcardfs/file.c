@@ -115,9 +115,11 @@ static long sdcardfs_unlocked_ioctl(struct file *file, unsigned int cmd,
 		goto out;
 
 	/* save current_cred and override it */
-	saved_cred = override_fsids(sbi, SDCARDFS_I(file->f_path.dentry->d_inode)->data);
-	if (!saved_cred)
-		return -ENOMEM;
+	saved_cred = override_fsids(sbi, SDCARDFS_I(file_inode(file))->data);
+	if (!saved_cred) {
+		err = -ENOMEM;
+		goto out;
+	}
 
 	if (lower_file->f_op->unlocked_ioctl)
 		err = lower_file->f_op->unlocked_ioctl(lower_file, cmd, arg);
@@ -148,9 +150,11 @@ static long sdcardfs_compat_ioctl(struct file *file, unsigned int cmd,
 		goto out;
 
 	/* save current_cred and override it */
-	saved_cred = override_fsids(sbi, SDCARDFS_I(file->f_path.dentry->d_inode)->data);
-	if (!saved_cred)
-		return -ENOMEM;
+	saved_cred = override_fsids(sbi, SDCARDFS_I(file_inode(file))->data);
+	if (!saved_cred) {
+		err = -ENOMEM;
+		goto out;
+	}
 
 	if (lower_file->f_op->compat_ioctl)
 		err = lower_file->f_op->compat_ioctl(lower_file, cmd, arg);
