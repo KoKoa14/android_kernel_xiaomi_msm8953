@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -60,7 +60,7 @@ enum fps_resolution {
 #define WRITEBACK_PANEL		10	/* Wifi display */
 #define LVDS_PANEL		11	/* LVDS */
 #define EDP_PANEL		12	/* LVDS */
-
+#define SPI_PANEL		13
 #define DSC_PPS_LEN		128
 
 /* HDR propeties count */
@@ -428,6 +428,10 @@ struct edp_panel_info {
 	char frame_rate;	/* fps */
 };
 
+struct spi_panel_info {
+	char frame_rate;
+};
+
 /**
  * struct dynamic_fps_data - defines dynamic fps related data
  * @hfp: horizontal front porch
@@ -735,6 +739,7 @@ struct mdss_panel_info {
 	struct lcd_panel_info lcdc;
 	struct fbc_panel_info fbc;
 	struct mipi_panel_info mipi;
+	struct spi_panel_info spi;
 	struct lvds_panel_info lvds;
 	struct edp_panel_info edp;
 
@@ -867,6 +872,9 @@ static inline u32 mdss_panel_get_framerate(struct mdss_panel_info *panel_info,
 		break;
 	case WRITEBACK_PANEL:
 		frame_rate = DEFAULT_FRAME_RATE;
+		break;
+	case SPI_PANEL:
+		frame_rate = panel_info->spi.frame_rate;
 		break;
 	case DTV_PANEL:
 		if (panel_info->dynamic_fps) {
