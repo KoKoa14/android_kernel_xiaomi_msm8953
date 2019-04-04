@@ -1241,7 +1241,7 @@ static int snd_seq_ioctl_set_client_info(struct snd_seq_client *client,
 
 	/* fill the info fields */
 	if (client_info.name[0])
-		strlcpy(client->name, client_info.name, sizeof(client->name));
+		strscpy(client->name, client_info.name, sizeof(client->name));
 
 	client->filter = client_info.filter;
 	client->event_lost = client_info.event_lost;
@@ -1556,7 +1556,7 @@ static int snd_seq_ioctl_create_queue(struct snd_seq_client *client,
 	/* set queue name */
 	if (! info.name[0])
 		snprintf(info.name, sizeof(info.name), "Queue-%d", q->queue);
-	strlcpy(q->name, info.name, sizeof(q->name));
+	strscpy(q->name, info.name, sizeof(q->name));
 	queuefree(q);
 
 	if (copy_to_user(arg, &info, sizeof(info)))
@@ -1634,7 +1634,7 @@ static int snd_seq_ioctl_set_queue_info(struct snd_seq_client *client,
 		queuefree(q);
 		return -EPERM;
 	}
-	strlcpy(q->name, info.name, sizeof(q->name));
+	strscpy(q->name, info.name, sizeof(q->name));
 	queuefree(q);
 
 	return 0;
